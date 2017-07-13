@@ -137,8 +137,7 @@ class CalendarDownloadDefaultWidget extends WidgetBase implements ContainerFacto
                               array $element,
                               array &$form,
                               FormStateInterface $formState) {
-
-    $fieldConfig = $this->isFieldConfigForm($formState);
+    $required = $this->fieldDefinition->isRequired();
     $fieldDefinitions = $this->getEntityFieldDefinitions();
     $element['summary'] = [
       '#type'          => 'textfield',
@@ -146,7 +145,7 @@ class CalendarDownloadDefaultWidget extends WidgetBase implements ContainerFacto
       '#title'         => t('Summary'),
       '#default_value' => isset($items[$delta]->summary) ?
         $items[$delta]->summary : NULL,
-      '#required'      => !$fieldConfig,
+      '#required'      => $required,
     ];
     $element['description'] = [
       '#type'          => 'textarea',
@@ -154,8 +153,21 @@ class CalendarDownloadDefaultWidget extends WidgetBase implements ContainerFacto
       '#title'         => t('Description'),
       '#default_value' => isset($items[$delta]->description) ?
         $items[$delta]->description : NULL,
-      '#required'      => !$fieldConfig,
+      '#required'      => $required,
     ];
+
+    // If the field isn't required, only require the description conditionally.
+    if (!$required) {
+      $element['#element_validate']['ics_field'] = [$this, 'validate'];
+      $parents = $element['#field_parents'] + [$this->fieldDefinition->getName(), $delta];
+      // The path has at least two components, so this is safe:
+      $path = array_shift($parents) . '[' . implode('][', $parents) . ']';
+      $element['description']['#states']['required'] = [
+        ":input[name=\"{$path}[summary]\"]" => [
+          'empty' => FALSE,
+        ]
+      ];
+    }
     $element['url'] = [
       '#type'          => 'textfield',
       '#placeholder'   => t('URL'),
@@ -192,14 +204,15 @@ class CalendarDownloadDefaultWidget extends WidgetBase implements ContainerFacto
   }
 
   /**
-   * @param \Drupal\Core\Form\FormStateInterface $formState
+   * Ensure that the summary field depends on the description field.
    *
-   * @return bool
+   * @param array $element
+   * @param \Drupal\Core\Form\FormStateInterface $formState
    */
-  private function isFieldConfigForm(FormStateInterface $formState) {
-
-    $build = $formState->getBuildInfo();
-    return $build['base_form_id'] === 'field_config_form';
+  public static function validate(array &$element, FormStateInterface $formState) {
+    if ($element['summary']['#value'] && !$element['description']['#value']) {
+      $formState->setError($element['description'], t('@name field is required.', ['@name' => $element['description']['#title']]));
+    }
   }
 
   /**
