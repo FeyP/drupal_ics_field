@@ -158,7 +158,7 @@ class CalendarDownloadDefaultWidget extends WidgetBase implements ContainerFacto
 
     // If the field isn't required, only require the description conditionally.
     if (!$required) {
-      $element['#element_validate']['ics_field'] = [$this, 'validate'];
+      $element['#element_validate']['ics_field'] = [static::class, 'validate'];
       $parents = $element['#field_parents'] + [$this->fieldDefinition->getName(), $delta];
       // The path has at least two components, so this is safe:
       $path = array_shift($parents) . '[' . implode('][', $parents) . ']';
