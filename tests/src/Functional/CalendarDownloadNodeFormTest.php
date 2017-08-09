@@ -177,6 +177,7 @@ class CalendarDownloadNodeFormTest extends BrowserTestBase {
       'field_body[0][value]'               => "Lorem ipsum.",
       'field_ics_download[0][summary]'     => '[node:title]',
       'field_ics_download[0][description]' => '[node:field_body]',
+      'field_ics_download[0][url]'         => '[node:url:absolute]',
     ];
     $this->drupalPostForm('node/add/ics_test', $add, t('Save and publish'));
 

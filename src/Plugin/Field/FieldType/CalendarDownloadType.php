@@ -129,7 +129,18 @@ class CalendarDownloadType extends FieldItemBase {
     // The current fielditem belongs to a fielditemlist,
     // that in turn belongs to a fieldable entity.
     $entity = $this->getParent()->getParent()->getValue();
-    $fileref = $this->icsFileManager->updateIcalFile($entity, $this->getFieldDefinition(), $this->getValue());
+    if ($entity->isNew()) {
+      // We can't directly create the file, if this is a new entity, since some
+      // token values, that might be used in the field settings, such as entity
+      // url, rely on the entity id and are thus only available after the entity
+      // has been saved. Thus we'll create an empty file now so that we can save
+      // the file id and update the file with the correct content during
+      // postSave().
+      $fileref = $this->icsFileManager->createIcalFile($entity, $this->getFieldDefinition(), $this->getValue());
+    }
+    else {
+      $fileref = $this->icsFileManager->updateIcalFile($entity, $this->getFieldDefinition(), $this->getValue());
+    }
     $this->set('fileref', $fileref);
     parent::preSave();
   }
@@ -148,6 +159,7 @@ class CalendarDownloadType extends FieldItemBase {
       // The current fielditem belongs to a fielditemlist,
       // that in turn belongs to a fieldable entity.
       $entity = $this->getParent()->getParent()->getValue();
+      $this->icsFileManager->updateIcalFile($entity, $this->getFieldDefinition(), $this->getValue());
       $file = File::load($this->get('fileref')->getValue());
       $this->fileUsageService->add($file, 'ics_field', 'node', $entity->id());
     }
