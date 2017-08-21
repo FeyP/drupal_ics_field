@@ -28,6 +28,6 @@
 
   },
   "require-dev":{
-    "paragonie/random_compat": "~1"
+    "paragonie/random_compat": "~2"
   }
 }
