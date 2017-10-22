@@ -119,6 +119,47 @@ class IcsFileManager {
   }
 
   /**
+   * Creates an empty ICS file for an entity.
+   *
+   * We can't create the actual contents of an ICS file during pre-save, since
+   * some tokens might rely on the entity id being present (e.g. url) and we
+   * can't save a file during post-save so we'll create an empty file during
+   * pre-save and update it with the actual content later during post-save.
+   *
+   * @param \Drupal\Core\Entity\ContentEntityBase\ContentEntityBase $contentEntity
+   *   Incoming content entity.
+   * @param \Drupal\Core\Field\FieldDefinitionInterface $fieldConfig
+   *   Field configuration.
+   * @param array
+   *   Field value.
+   *
+   * @return int|null
+   *   Returns the file id of the created/updated file.
+   */
+  public function createIcalFile(ContentEntityBase $contentEntity, FieldDefinitionInterface $fieldConfig, array $fieldValue) {
+    $calendarPropertyProcessor = $this->calendarPropertyProcessorFactory->create($fieldConfig);
+    // Since we only want to create a file, if the date fields are filled in,
+    // we need to get the calendar properties. We'll use dummy content for the
+    // tokens, because the actual tokens might rely on an entity id being
+    // present, which would cause an exception and we can't just call the
+    // processor without tokens due to its token validation.
+    $tokens = [
+      'summary' => 'dummy',
+      'url' => 'dummy',
+      'description' => 'dummy',
+    ];
+    $calendarProperties = $calendarPropertyProcessor->getCalendarProperties($tokens, $contentEntity, $this->request->getHost());
+    if (!empty($calendarProperties['dates_list'])) {
+      try {
+        return $this->saveManagedCalendarFile($contentEntity, $fieldConfig, '', isset($fieldValue['fileref']) ? $fieldValue['fileref'] : NULL);
+      }
+      catch (\Exception $e) {
+        $this->logger->error($e->getMessage());
+      }
+    }
+  }
+
+  /**
    * Create/Update managed ical file.
    *
    * @param ContentEntityBase $contentEntity
