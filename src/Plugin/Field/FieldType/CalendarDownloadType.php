@@ -87,11 +87,11 @@ class CalendarDownloadType extends FieldItemBase {
    */
   public static function defaultStorageSettings() {
     return [
-             'is_ascii'             => FALSE,
-             'uri_scheme'           => 'public',
-             'file_directory'       => 'icsfiles',
-             'date_field_reference' => NULL,
-           ] + parent::defaultStorageSettings();
+      'is_ascii'             => FALSE,
+      'uri_scheme'           => 'public',
+      'file_directory'       => 'icsfiles',
+      'date_field_reference' => NULL,
+    ] + parent::defaultStorageSettings();
   }
 
   /**
@@ -102,16 +102,16 @@ class CalendarDownloadType extends FieldItemBase {
   public static function propertyDefinitions(FieldStorageDefinitionInterface $fieldDefinition) {
     // Prevent early t() calls by using the TranslatableMarkup.
     $properties['summary'] = DataDefinition::create('string')
-                                           ->setLabel(new TranslatableMarkup('Summary'))
-                                           ->setRequired(TRUE);
+      ->setLabel(new TranslatableMarkup('Summary'))
+      ->setRequired(TRUE);
     $properties['description'] = DataDefinition::create('string')
-                                               ->setLabel(new TranslatableMarkup('Description'))
-                                               ->setRequired(TRUE);
+      ->setLabel(new TranslatableMarkup('Description'))
+      ->setRequired(TRUE);
     $properties['url'] = DataDefinition::create('string')
-                                       ->setLabel(new TranslatableMarkup('URL'));
+      ->setLabel(new TranslatableMarkup('URL'));
     $properties['fileref'] = DataDefinition::create('string')
-                                           ->setComputed(TRUE)
-                                           ->setLabel(new TranslatableMarkup('ics File reference'));
+      ->setComputed(TRUE)
+      ->setLabel(new TranslatableMarkup('ics File reference'));
 
     return $properties;
   }
@@ -211,7 +211,7 @@ class CalendarDownloadType extends FieldItemBase {
           // If the target entities act as bundles for another entity type,
           // their IDs should not exceed the maximum length for bundles.
           'length'      => $targetTypeInfo->getBundleOf() ?
-            EntityTypeInterface::BUNDLE_MAX_LENGTH : 255,
+          EntityTypeInterface::BUNDLE_MAX_LENGTH : 255,
         ],
       ],
     ];
@@ -269,8 +269,10 @@ class CalendarDownloadType extends FieldItemBase {
   /**
    * A function that checks if the default directory for ics files is writable.
    *
-   * @param array                                $element
+   * @param array $element
+   *   The field element.
    * @param \Drupal\Core\Form\FormStateInterface $formState
+   *   The form state of the form the field element is part of.
    */
   public function checkWriteableDirectory(array $element,
                                           FormStateInterface $formState) {
