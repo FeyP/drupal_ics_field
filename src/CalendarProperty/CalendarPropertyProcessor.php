@@ -105,7 +105,9 @@ class CalendarPropertyProcessor {
 
     $replaced = [];
     foreach ($tokens as $id => $token) {
-      $replaced[$id] = $this->tokenService->replace($token, $data);
+      $replaced[$id] = $this->tokenService->replace($token, $data, [
+        'clear' => TRUE,
+      ]);
     }
 
     $calendarProperties = array_merge($calendarProperties, $replaced);
