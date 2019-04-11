@@ -4,7 +4,7 @@ namespace Drupal\Tests\ics_field\Functional;
 
 use Drupal\node\Entity\NodeType;
 use Drupal\Tests\BrowserTestBase;
-use Symfony\Component\DomCrawler\Crawler;
+use GuzzleHttp\Client;
 
 /**
  * Tests that the add/edit Node Forms behaves properly.
@@ -66,10 +66,10 @@ class CalendarDownloadNodeFormTest extends BrowserTestBase {
     $bundle = 'ics_test';
 
     $nodeType = NodeType::create([
-                                   'type'        => $bundle,
-                                   'name'        => 'ics_test',
-                                   'description' => "Use <em>ics_test</em> for  testing ics.",
-                                 ]);
+      'type'        => $bundle,
+      'name'        => 'ics_test',
+      'description' => "Use <em>ics_test</em> for  testing ics.",
+    ]);
     $nodeType->save();
 
     entity_create('field_storage_config',
@@ -101,11 +101,11 @@ class CalendarDownloadNodeFormTest extends BrowserTestBase {
                                         'type'        => 'calendar_download_type',
                                       ]);
     $fieldIcsDownload->setSettings([
-                                     'date_field_reference' => 'field_dates',
-                                     'is_ascii'             => FALSE,
-                                     'uri_scheme'           => 'public',
-                                     'file_directory'       => 'icsfiles',
-                                   ]);
+      'date_field_reference' => 'field_dates',
+      'is_ascii'             => FALSE,
+      'uri_scheme'           => 'public',
+      'file_directory'       => 'icsfiles',
+    ]);
     $fieldIcsDownload->save();
     entity_create('field_config',
                   [
@@ -177,8 +177,9 @@ class CalendarDownloadNodeFormTest extends BrowserTestBase {
       'field_body[0][value]'               => "Lorem ipsum.",
       'field_ics_download[0][summary]'     => '[node:title]',
       'field_ics_download[0][description]' => '[node:field_body]',
+      'field_ics_download[0][url]'         => '[node:url:absolute]',
     ];
-    $this->drupalPostForm('node/add/ics_test', $add, t('Save and publish'));
+    $this->drupalPostForm('node/add/ics_test', $add, t('Save'));
 
     // Check that the node exists in the database.
     $node = $this->drupalGetNodeByTitle($add['title[0][value]']);
@@ -199,14 +200,14 @@ class CalendarDownloadNodeFormTest extends BrowserTestBase {
     if ($icalValidationUrl) {
       // Send a post to the ical_validation_url,
       // at http://severinghaus.org/projects/icv/
-      $httpClient = \Drupal::httpClient();
+      $httpClient = new Client();
       $postArray = [
         'form_params' => ['snip' => $icsString],
       ];
       $response = $httpClient->post($icalValidationUrl, $postArray);
-      $crawler = new Crawler($response->getBody()->getContents());
-      $this->assertEquals(1, $crawler->filter('div.message.success')->count());
-    } else {
+      $this->assertNotEquals(FALSE, strpos($response->getBody()->getContents(), 'Congratulations; your calendar validated!'));
+    }
+    else {
       // TODO Implement some local validation.
       // This would imply a need some local code iCal parsing library to
       // validate the generated string.
