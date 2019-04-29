@@ -151,6 +151,7 @@ class ICalFactory {
         $iCalendarEvent->setUrl($eventUrl);
       }
       $iCalendarEvent->setUseTimezone(TRUE);
+      $iCalendarEvent->setUseUtc(FALSE);
       $iCalendar->addComponent($iCalendarEvent);
     }
     return $iCalendar;
